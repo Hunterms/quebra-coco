@@ -1,0 +1,13 @@
+[
+  {
+    "origin": [
+      "http://localhost:8484",
+      "http://127.0.0.1:8484",
+      "https://terreiro-candieiro.web.app",
+      "https://terreiro-candieiro.firebaseapp.com"
+    ],
+    "method": ["GET", "POST", "PUT", "DELETE", "HEAD"],
+    "responseHeader": ["Content-Type", "Authorization", "x-goog-resumable"],
+    "maxAgeSeconds": 3600
+  }
+]

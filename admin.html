@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Quebra-Coco</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --yellow:   #F5C800;
+  --burgundy: #6B2D2D;
+  --red:      #E63329;
+  --green:    #2E7D32;
+  --bg:       #111111;
+  --bg2:      #181818;
+  --bg3:      #1f1f1f;
+  --bg4:      #282828;
+  --text:     #f0e8d0;
+  --text2:    rgba(240,232,208,.5);
+  --text3:    rgba(240,232,208,.25);
+  --border:   rgba(240,232,208,.08);
+  --sidebar:  240px;
+  --rad:      6px;
+  --f-display: 'Playfair Display', serif;
+  --f-body:    'Space Grotesk', sans-serif;
+}
+
+/* ── RESET ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f-body);font-weight:300;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+button{font-family:var(--f-body);cursor:pointer}
+input,select,textarea{font-family:var(--f-body)}
+
+/* ── LOGIN ── */
+#login-screen{
+  position:fixed;inset:0;z-index:9999;
+  background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+}
+#login-screen.hide{display:none}
+.login-box{
+  width:100%;max-width:380px;
+  padding:2.5rem;
+  background:var(--bg3);
+  border:1px solid rgba(245,200,0,.12);
+  border-top:3px solid var(--yellow);
+}
+.login-brand{
+  display:flex;align-items:center;gap:.9rem;margin-bottom:2.2rem;
+}
+.login-brand-dot{
+  width:40px;height:40px;border-radius:50%;
+  background:var(--yellow);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--f-display);font-weight:900;font-size:13px;color:var(--burgundy);
+  flex-shrink:0;
+}
+.login-brand-name{
+  font-family:var(--f-display);font-weight:900;font-size:1.1rem;
+  letter-spacing:.05em;color:var(--yellow);line-height:1.2;
+}
+.login-brand-sub{
+  font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--text2);margin-top:2px;
+}
+.login-box h2{font-family:var(--f-display);font-size:1.5rem;margin-bottom:.25rem;color:var(--text)}
+.login-box p{font-size:.75rem;color:var(--text2);margin-bottom:1.8rem}
+
+.login-err{
+  color:var(--red);font-size:.75rem;margin-bottom:1rem;
+  padding:.5rem .8rem;background:rgba(230,51,41,.08);
+  border-radius:var(--rad);border:1px solid rgba(230,51,41,.2);
+  display:none;
+}
+.login-err.vis{display:block}
+
+/* ── FORM FIELDS ── */
+.fi-group{margin-bottom:1.1rem}
+.fi-group label{
+  display:block;font-size:.6rem;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--text3);margin-bottom:.35rem;
+}
+.fi{
+  width:100%;background:var(--bg2);
+  border:1px solid var(--border);color:var(--text);
+  padding:.65rem .85rem;font-size:.85rem;
+  border-radius:var(--rad);outline:none;
+  transition:border-color .2s;
+}
+.fi:focus{border-color:rgba(245,200,0,.4)}
+.fi::placeholder{color:var(--text3)}
+.fi option{background:var(--bg3)}
+textarea.fi{resize:vertical;min-height:80px;line-height:1.6}
+select.fi{cursor:pointer}
+
+/* ── BUTTONS ── */
+.btn{
+  display:inline-flex;align-items:center;gap:.4rem;
+  padding:.65rem 1.4rem;font-size:.75rem;font-weight:500;
+  letter-spacing:.1em;text-transform:uppercase;
+  border-radius:var(--rad);cursor:pointer;
+  transition:all .18s;font-family:var(--f-body);border:none;
+  white-space:nowrap;
+}
+.btn-yellow{background:var(--yellow);color:var(--burgundy);font-weight:600}
+.btn-yellow:hover{background:#e6b800}
+.btn-outline{background:transparent;color:var(--text2);border:1px solid var(--border)}
+.btn-outline:hover{border-color:var(--yellow);color:var(--yellow)}
+.btn-danger{background:rgba(230,51,41,.1);color:var(--red);border:1px solid rgba(230,51,41,.2)}
+.btn-danger:hover{background:rgba(230,51,41,.2)}
+.btn-sm{padding:.38rem .8rem;font-size:.66rem}
+.btn-full{width:100%;justify-content:center}
+
+/* ── MAIN LAYOUT ── */
+#app{display:none;height:100vh;overflow:hidden}
+#app.show{display:flex}
+
+.sidebar{
+  width:var(--sidebar);flex-shrink:0;
+  background:var(--bg2);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  overflow-y:auto;
+}
+.sb-header{
+  padding:1.5rem 1.2rem 1rem;
+  border-bottom:1px solid var(--border);
+}
+.sb-logo{
+  font-family:var(--f-display);font-weight:900;
+  font-size:1rem;color:var(--yellow);letter-spacing:.04em;
+  line-height:1.2;
+}
+.sb-logo small{
+  display:block;font-family:var(--f-body);font-size:.6rem;
+  font-weight:400;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--text3);margin-top:4px;
+}
+.sb-nav{
+  flex:1;padding:.8rem 0;
+}
+.sb-link{
+  display:flex;align-items:center;gap:.7rem;
+  padding:.7rem 1.2rem;font-size:.78rem;
+  font-weight:500;letter-spacing:.06em;
+  color:var(--text2);transition:color .15s,background .15s;
+  border-left:2px solid transparent;
+}
+.sb-link svg{width:16px;height:16px;flex-shrink:0;opacity:.6}
+.sb-link:hover{color:var(--text);background:var(--bg3)}
+.sb-link.active{color:var(--yellow);border-left-color:var(--yellow);background:rgba(245,200,0,.05)}
+.sb-link.active svg{opacity:1}
+.sb-footer{
+  padding:1rem 1.2rem;border-top:1px solid var(--border);
+}
+.sb-user{font-size:.7rem;color:var(--text3);margin-bottom:.6rem;word-break:break-all}
+
+/* ── MAIN CONTENT ── */
+.main-content{
+  flex:1;display:flex;flex-direction:column;overflow:hidden;
+}
+.main-topbar{
+  height:52px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 2rem;border-bottom:1px solid var(--border);
+}
+.main-topbar h1{
+  font-family:var(--f-display);font-size:1.1rem;
+  font-weight:700;color:var(--text);
+}
+.main-body{flex:1;overflow-y:auto;padding:2rem}
+
+/* ── SECTIONS ── */
+.sb-sec{display:none}
+.sb-sec.active{display:block}
+
+/* ── CARDS & PANELS ── */
+.panel{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--rad);overflow:hidden;
+  margin-bottom:1.5rem;
+}
+.panel-head{
+  padding:1rem 1.2rem;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.panel-head h3{font-family:var(--f-display);font-size:1rem;font-weight:700;color:var(--text)}
+.panel-head p{font-size:.72rem;color:var(--text3);margin-top:2px}
+.panel-body{padding:1.2rem}
+
+/* Add event form */
+.evt-form{
+  display:grid;
+  grid-template-columns:2fr 1fr 1fr;
+  gap:.8rem;
+  align-items:end;
+}
+.evt-form .fi-group{margin-bottom:0}
+.evt-form-row2{
+  display:grid;
+  grid-template-columns:1fr 1fr 2fr;
+  gap:.8rem;
+  margin-top:.8rem;
+  align-items:end;
+}
+
+/* Events list */
+.evt-list{margin-top:.5rem}
+.evt-row{
+  display:grid;
+  grid-template-columns:80px 48px 1fr 100px auto;
+  gap:.8rem;align-items:center;
+  padding:.65rem .5rem;
+  border-bottom:1px solid var(--border);
+  font-size:.8rem;
+}
+.evt-row:last-child{border-bottom:none}
+.evt-row:hover{background:var(--bg4);border-radius:4px}
+.evt-date-col{
+  font-family:var(--f-display);font-size:.95rem;
+  font-weight:700;color:var(--yellow);
+}
+.evt-time-col{font-size:.75rem;color:var(--text3)}
+.evt-name-col{color:var(--text);font-weight:500}
+.evt-type-badge{
+  display:inline-block;font-size:.6rem;font-weight:600;
+  letter-spacing:.12em;text-transform:uppercase;
+  padding:3px 8px;border-radius:100px;
+  border:1px solid currentColor;
+}
+.type-apresentacao{color:var(--red)}
+.type-oficina{color:var(--green)}
+.type-ensaio{color:var(--yellow)}
+.type-privado{color:var(--text2)}
+.evt-del-btn{
+  background:none;border:none;
+  color:rgba(230,51,41,.35);cursor:pointer;
+  font-size:.75rem;padding:.3rem .5rem;
+  border-radius:var(--rad);transition:color .15s,background .15s;
+}
+.evt-del-btn:hover{color:var(--red);background:rgba(230,51,41,.1)}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:1.5rem;right:1.5rem;z-index:9998;
+  background:var(--bg3);border:1px solid var(--border);
+  border-left:3px solid var(--yellow);
+  padding:.7rem 1rem;font-size:.78rem;border-radius:var(--rad);
+  transform:translateY(12px);opacity:0;
+  transition:all .25s ease;pointer-events:none;
+  max-width:280px;
+}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.err{border-left-color:var(--red)}
+
+/* ── EMPTY STATE ── */
+.empty-state{
+  text-align:center;padding:3rem 1rem;
+  color:var(--text3);font-size:.8rem;line-height:1.6;
+}
+.empty-state svg{margin:0 auto 1rem;display:block;opacity:.15}
+
+/* ── FOTO SLOTS ── */
+.foto-slots{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media(max-width:900px){.foto-slots{grid-template-columns:1fr}}
+.foto-slot{
+  background:var(--bg4);border:1px solid var(--border);
+  border-radius:var(--rad);padding:1.2rem;
+}
+.foto-slot-label{
+  font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--text3);margin-bottom:.5rem;
+}
+.foto-slot-name{
+  font-family:var(--f-display);font-size:.95rem;font-weight:700;
+  color:var(--text);margin-bottom:.2rem;
+}
+.foto-slot-dims{
+  font-size:.68rem;color:var(--yellow);letter-spacing:.05em;
+  margin-bottom:.9rem;
+}
+.foto-preview{
+  width:100%;aspect-ratio:16/9;
+  background:var(--bg2);border:1px dashed var(--border);
+  border-radius:4px;margin-bottom:.8rem;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;position:relative;
+  cursor:pointer;transition:border-color .15s;
+}
+.foto-preview:hover{border-color:rgba(245,200,0,.3)}
+.foto-preview img{width:100%;height:100%;object-fit:cover}
+.foto-preview-empty{font-size:.7rem;color:var(--text3);text-align:center;padding:.5rem}
+.foto-slot-actions{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+.upload-progress{
+  display:none;height:3px;
+  background:var(--bg2);border-radius:100px;
+  margin-bottom:.8rem;overflow:hidden;
+}
+.upload-progress.active{display:block}
+.upload-fill{
+  height:100%;background:var(--yellow);
+  border-radius:100px;width:0%;
+  transition:width .1s linear;
+}
+.upload-pct{
+  font-size:.65rem;color:var(--text3);
+  display:none;margin-bottom:.5rem;
+}
+.upload-pct.active{display:block}
+.foto-saved-tag{
+  font-size:.65rem;color:#4CAF50;
+  display:none;align-items:center;gap:4px;
+}
+.foto-saved-tag.vis{display:flex}
+.foto-preview.tem-foto{cursor:crosshair}
+.focal-dot{
+  position:absolute;width:18px;height:18px;border-radius:50%;
+  border:2px solid #fff;background:rgba(245,200,0,.8);
+  box-shadow:0 0 0 1px rgba(0,0,0,.5);
+  transform:translate(-50%,-50%);pointer-events:none;
+  transition:left .12s,top .12s;
+}
+.focal-hint{
+  font-size:.62rem;color:var(--text3);text-align:center;
+  margin:-.3rem 0 .7rem;display:none;
+}
+.focal-hint.vis{display:block}
+
+/* ── RESPONSIVE (sidebar collapses at narrow) ── */
+@media (max-width:640px){
+  .sidebar{position:fixed;left:-100%;top:0;bottom:0;z-index:200;transition:left .25s}
+  .sidebar.open{left:0}
+  #app{display:block!important}
+  .main-content{width:100%}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══════════════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-brand">
+      <div class="login-brand-dot">QC</div>
+      <div>
+        <div class="login-brand-name">Quebra-Coco</div>
+        <div class="login-brand-sub">Painel administrativo</div>
+      </div>
+    </div>
+    <h2>Entrar</h2>
+    <p>Acesso restrito à equipe do coletivo.</p>
+
+    <div class="login-err" id="loginErr"></div>
+
+    <div class="fi-group">
+      <label for="loginEmail">E-mail</label>
+      <input class="fi" type="email" id="loginEmail" placeholder="seu@email.com" autocomplete="email">
+    </div>
+    <div class="fi-group">
+      <label for="loginPass">Senha</label>
+      <input class="fi" type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
+    </div>
+
+    <button class="btn btn-yellow btn-full" onclick="fazerLogin()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+      Entrar
+    </button>
+  </div>
+</div>
+
+<!-- ══ APP ════════════════════════════════════════════════ -->
+<div id="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sb-header">
+      <img id="sb-logo-img" src="logo.png" alt="Quebra-Coco"
+        style="height:32px;width:auto;display:block;margin-bottom:.6rem;opacity:.9">
+      <div class="sb-logo">
+        Quebra-Coco
+        <small>Admin</small>
+      </div>
+    </div>
+
+    <nav class="sb-nav">
+      <a href="#" class="sb-link active" data-tab="agenda" onclick="trocaTab('agenda',this);return false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Agenda
+      </a>
+      <a href="#" class="sb-link" data-tab="imprensa" onclick="trocaTab('imprensa',this);return false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8z"/></svg>
+        Imprensa
+      </a>
+      <a href="#" class="sb-link" data-tab="fotos" onclick="trocaTab('fotos',this);return false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        Fotos
+      </a>
+    </nav>
+
+    <div class="sb-footer">
+      <div class="sb-user" id="sbUser"></div>
+      <button class="btn btn-outline btn-sm btn-full" onclick="fazerLogout()">Sair</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main-content">
+
+    <div class="main-topbar">
+      <h1 id="mainTitle">Agenda</h1>
+      <a href="index.html" class="btn btn-outline btn-sm" target="_blank">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Ver site
+      </a>
+    </div>
+
+    <div class="main-body">
+
+      <!-- ── AGENDA TAB ── -->
+      <section id="tab-agenda" class="sb-sec active">
+
+        <!-- Add event form -->
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h3>Adicionar evento</h3>
+              <p>Preencha os campos e clique em Adicionar</p>
+            </div>
+          </div>
+          <div class="panel-body">
+
+            <div class="evt-form">
+              <div class="fi-group">
+                <label for="evtNome">Nome do evento</label>
+                <input class="fi" type="text" id="evtNome" placeholder="Ex: Apresentação São João">
+              </div>
+              <div class="fi-group">
+                <label for="evtData">Data</label>
+                <input class="fi" type="date" id="evtData">
+              </div>
+              <div class="fi-group">
+                <label for="evtHora">Horário</label>
+                <input class="fi" type="time" id="evtHora" value="19:00">
+              </div>
+            </div>
+
+            <div class="evt-form-row2">
+              <div class="fi-group">
+                <label for="evtTipo">Tipo</label>
+                <select class="fi" id="evtTipo">
+                  <option value="apresentacao">Apresentação</option>
+                  <option value="oficina">Oficina</option>
+                  <option value="ensaio">Ensaio</option>
+                  <option value="privado">Privado</option>
+                </select>
+              </div>
+              <div class="fi-group">
+                <label for="evtLocal">Local</label>
+                <input class="fi" type="text" id="evtLocal" placeholder="Ex: UNICAMP">
+              </div>
+              <div class="fi-group">
+                <label for="evtObs">Observação (opcional)</label>
+                <input class="fi" type="text" id="evtObs" placeholder="Detalhes extras">
+              </div>
+            </div>
+
+            <div style="margin-top:1rem;display:flex;gap:.6rem">
+              <button class="btn btn-yellow" onclick="adicionarEvento()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Adicionar
+              </button>
+              <button class="btn btn-outline" onclick="limparForm()">Limpar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Events list -->
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h3>Próximos eventos</h3>
+              <p id="evtCount">Carregando…</p>
+            </div>
+          </div>
+          <div class="panel-body" style="padding:0">
+            <div id="evtLista"></div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ── IMPRENSA TAB ── -->
+      <section id="tab-imprensa" class="sb-sec">
+
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h3>Adicionar cobertura</h3>
+              <p>Matérias, entrevistas e aparições na mídia</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="evt-form">
+              <div class="fi-group">
+                <label for="impSource">Veículo / fonte</label>
+                <input class="fi" type="text" id="impSource" placeholder="Ex: EPTV, Jornal da Unicamp">
+              </div>
+              <div class="fi-group">
+                <label for="impTitulo">Título da matéria</label>
+                <input class="fi" type="text" id="impTitulo" placeholder="Ex: Carnaval reúne 4 mil pessoas em Barão Geraldo">
+              </div>
+              <div class="fi-group">
+                <label for="impSub">Subtítulo / descrição curta</label>
+                <input class="fi" type="text" id="impSub" placeholder="1-2 frases resumindo a cobertura">
+              </div>
+              <div class="fi-group">
+                <label for="impLink">Link da matéria</label>
+                <input class="fi" type="url" id="impLink" placeholder="https://...">
+              </div>
+              <div class="fi-group">
+                <label for="impImg">Imagem (opcional)</label>
+                <div style="display:flex;gap:.5rem;align-items:center">
+                  <input class="fi" type="url" id="impImg" placeholder="https://... ou envie abaixo" style="flex:1">
+                  <input type="file" id="file-imp-img" accept="image/*" style="display:none" onchange="uploadImpImg(this)">
+                  <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('file-imp-img').click()" style="white-space:nowrap">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Upload
+                  </button>
+                </div>
+                <div class="upload-progress" id="prog-imp-img" style="margin-top:.4rem"><div class="upload-fill" id="fill-imp-img"></div></div>
+                <div class="upload-pct" id="pct-imp-img" style="margin-top:.2rem"></div>
+              </div>
+              <div class="fi-group">
+                <label for="impOrdem">Ordem de exibição</label>
+                <input class="fi" type="number" id="impOrdem" placeholder="1, 2, 3…" value="1" min="1">
+              </div>
+            </div>
+            <div style="margin-top:1rem;display:flex;gap:.6rem;flex-wrap:wrap;align-items:center">
+              <button id="impSaveBtn" class="btn btn-yellow" onclick="adicionarImprensa()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Adicionar
+              </button>
+              <button class="btn btn-outline" onclick="limparFormImp()">Limpar</button>
+              <button id="impCancelBtn" class="btn btn-outline" onclick="limparFormImp()" style="display:none;border-color:var(--red);color:var(--red)">Cancelar edição</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h3>Coberturas cadastradas</h3>
+              <p id="impCount">Carregando…</p>
+            </div>
+          </div>
+          <div class="panel-body" style="padding:0">
+            <div id="impLista"></div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ── FOTOS TAB ── -->
+      <section id="tab-fotos" class="sb-sec">
+
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h3>Fotos do site</h3>
+              <p>Clique no preview ou em "Enviar foto" para fazer upload direto.</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="foto-slots">
+
+              <!-- Logo -->
+              <div class="foto-slot">
+                <div class="foto-slot-label">Identidade Visual</div>
+                <div class="foto-slot-name">Logo do Coletivo</div>
+                <div class="foto-slot-dims">PNG com fundo transparente · mín. 600 px · nav + seção O que é o Coco</div>
+                <input type="file" id="file-logo" accept="image/*" style="display:none"
+                  onchange="uploadFoto('logo',this,'prev-logo','tag-logo','prog-logo','pct-logo')">
+                <div class="foto-preview" id="prev-logo" style="background:var(--bg)"
+                  data-no-focal onclick="document.getElementById('file-logo').click()">
+                  <div class="foto-preview-empty">Clique para enviar o logo</div>
+                </div>
+                <div class="upload-progress" id="prog-logo"><div class="upload-fill" id="fill-logo"></div></div>
+                <div class="upload-pct" id="pct-logo"></div>
+                <div class="foto-slot-actions">
+                  <button class="btn btn-yellow btn-sm" onclick="document.getElementById('file-logo').click()">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Enviar foto
+                  </button>
+                  <button class="btn btn-outline btn-sm" onclick="limparFoto('logo','prev-logo','tag-logo')">Remover</button>
+                  <span class="foto-saved-tag" id="tag-logo">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    Salvo
+                  </span>
+                </div>
+              </div>
+
+              <!-- Hero -->
+              <div class="foto-slot">
+                <div class="foto-slot-label">Seção Hero</div>
+                <div class="foto-slot-name">Foto Principal</div>
+                <div class="foto-slot-dims">900 × 1200 px recomendado · proporção livre · foco vertical</div>
+                <input type="file" id="file-hero" accept="image/*" style="display:none"
+                  onchange="uploadFoto('hero',this,'prev-hero','tag-hero','prog-hero','pct-hero')">
+                <div class="foto-preview" id="prev-hero"
+                  onclick="prevClick(event,'file-hero','hero',this)">
+                  <div class="foto-preview-empty">Clique para enviar a foto</div>
+                </div>
+                <div class="focal-hint" id="fh-hero">Clique na foto para reposicionar o foco</div>
+                <div class="upload-progress" id="prog-hero"><div class="upload-fill" id="fill-hero"></div></div>
+                <div class="upload-pct" id="pct-hero"></div>
+                <div class="foto-slot-actions">
+                  <button class="btn btn-yellow btn-sm" onclick="document.getElementById('file-hero').click()">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Enviar foto
+                  </button>
+                  <button class="btn btn-outline btn-sm" onclick="limparFoto('hero','prev-hero','tag-hero')">Remover</button>
+                  <span class="foto-saved-tag" id="tag-hero">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    Salvo
+                  </span>
+                </div>
+              </div>
+
+              <!-- Gallery wide -->
+              <div class="foto-slot">
+                <div class="foto-slot-label">Quem Somos · Galeria</div>
+                <div class="foto-slot-name">Foto Panorâmica</div>
+                <div class="foto-slot-dims">1200 × 600 px recomendado · proporção 2:1 · grupo em roda</div>
+                <input type="file" id="file-qs-wide" accept="image/*" style="display:none"
+                  onchange="uploadFoto('qs_wide',this,'prev-qs-wide','tag-qs-wide','prog-qs-wide','pct-qs-wide')">
+                <div class="foto-preview" id="prev-qs-wide"
+                  onclick="prevClick(event,'file-qs-wide','qs_wide',this)">
+                  <div class="foto-preview-empty">Clique para enviar a foto</div>
+                </div>
+                <div class="focal-hint" id="fh-qs-wide">Clique na foto para reposicionar o foco</div>
+                <div class="upload-progress" id="prog-qs-wide"><div class="upload-fill" id="fill-qs-wide"></div></div>
+                <div class="upload-pct" id="pct-qs-wide"></div>
+                <div class="foto-slot-actions">
+                  <button class="btn btn-yellow btn-sm" onclick="document.getElementById('file-qs-wide').click()">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Enviar foto
+                  </button>
+                  <button class="btn btn-outline btn-sm" onclick="limparFoto('qs_wide','prev-qs-wide','tag-qs-wide')">Remover</button>
+                  <span class="foto-saved-tag" id="tag-qs-wide">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    Salvo
+                  </span>
+                </div>
+              </div>
+
+              <!-- Gallery tall 1 -->
+              <div class="foto-slot">
+                <div class="foto-slot-label">Quem Somos · Galeria</div>
+                <div class="foto-slot-name">Foto Retrato 1</div>
+                <div class="foto-slot-dims">600 × 800 px recomendado · proporção 3:4 · close de integrante</div>
+                <input type="file" id="file-qs-tall-1" accept="image/*" style="display:none"
+                  onchange="uploadFoto('qs_tall_1',this,'prev-qs-tall-1','tag-qs-tall-1','prog-qs-tall-1','pct-qs-tall-1')">
+                <div class="foto-preview" id="prev-qs-tall-1"
+                  onclick="prevClick(event,'file-qs-tall-1','qs_tall_1',this)">
+                  <div class="foto-preview-empty">Clique para enviar a foto</div>
+                </div>
+                <div class="focal-hint" id="fh-qs-tall-1">Clique na foto para reposicionar o foco</div>
+                <div class="upload-progress" id="prog-qs-tall-1"><div class="upload-fill" id="fill-qs-tall-1"></div></div>
+                <div class="upload-pct" id="pct-qs-tall-1"></div>
+                <div class="foto-slot-actions">
+                  <button class="btn btn-yellow btn-sm" onclick="document.getElementById('file-qs-tall-1').click()">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Enviar foto
+                  </button>
+                  <button class="btn btn-outline btn-sm" onclick="limparFoto('qs_tall_1','prev-qs-tall-1','tag-qs-tall-1')">Remover</button>
+                  <span class="foto-saved-tag" id="tag-qs-tall-1">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    Salvo
+                  </span>
+                </div>
+              </div>
+
+              <!-- Gallery tall 2 -->
+              <div class="foto-slot">
+                <div class="foto-slot-label">Quem Somos · Galeria</div>
+                <div class="foto-slot-name">Foto Retrato 2</div>
+                <div class="foto-slot-dims">600 × 800 px recomendado · proporção 3:4 · bandeira ou momento</div>
+                <input type="file" id="file-qs-tall-2" accept="image/*" style="display:none"
+                  onchange="uploadFoto('qs_tall_2',this,'prev-qs-tall-2','tag-qs-tall-2','prog-qs-tall-2','pct-qs-tall-2')">
+                <div class="foto-preview" id="prev-qs-tall-2"
+                  onclick="prevClick(event,'file-qs-tall-2','qs_tall_2',this)">
+                  <div class="foto-preview-empty">Clique para enviar a foto</div>
+                </div>
+                <div class="focal-hint" id="fh-qs-tall-2">Clique na foto para reposicionar o foco</div>
+                <div class="upload-progress" id="prog-qs-tall-2"><div class="upload-fill" id="fill-qs-tall-2"></div></div>
+                <div class="upload-pct" id="pct-qs-tall-2"></div>
+                <div class="foto-slot-actions">
+                  <button class="btn btn-yellow btn-sm" onclick="document.getElementById('file-qs-tall-2').click()">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Enviar foto
+                  </button>
+                  <button class="btn btn-outline btn-sm" onclick="limparFoto('qs_tall_2','prev-qs-tall-2','tag-qs-tall-2')">Remover</button>
+                  <span class="foto-saved-tag" id="tag-qs-tall-2">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    Salvo
+                  </span>
+                </div>
+              </div>
+
+            </div><!-- /foto-slots -->
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h3>Fotos da Trajetória</h3>
+              <p>Uma foto por ano · aparece ao lado do texto na seção Nossa História</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="foto-slots">
+
+              <!-- 2022 -->
+              <div class="foto-slot">
+                <div class="foto-slot-label">Nossa História</div>
+                <div class="foto-slot-name">2022 — Fundação</div>
+                <div class="foto-slot-dims">4:3 recomendado · mín. 800 × 600 px</div>
+                <input type="file" id="file-tl-2022" accept="image/*" style="display:none"
+                  onchange="uploadFoto('tl_2022',this,'prev-tl-2022','tag-tl-2022','prog-tl-2022','pct-tl-2022')">
+                <div class="foto-preview" id="prev-tl-2022"
+                  onclick="prevClick(event,'file-tl-2022','tl_2022',this)">
+                  <div class="foto-preview-empty">Clique para enviar a foto</div>
+                </div>
+                <div class="focal-hint" id="fh-tl-2022">Clique na foto para reposicionar o foco</div>
+                <div class="upload-progress" id="prog-tl-2022"><div class="upload-fill" id="fill-tl-2022"></div></div>
+                <div class="upload-pct" id="pct-tl-2022"></div>
+                <div class="foto-slot-actions">
+                  <button class="btn btn-yellow btn-sm" onclick="document.getElementById('file-tl-2022').click()">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Enviar foto
+                  </button>
+                  <button class="btn btn-outline btn-sm" onclick="limparFoto('tl_2022','prev-tl-2022','tag-tl-2022')">Remover</button>
+                  <span class="foto-saved-tag" id="tag-tl-2022">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    Salvo
+                  </span>
+                </div>
+              </div>
+
+              <!-- 2023 -->
+              <div class="foto-slot">
+                <div class="foto-slot-label">Nossa História</div>
+                <div class="foto-slot-name">2023 — Estreia no Carnaval</div>
+                <div class="foto-slot-dims">4:3 recomendado · mín. 800 × 600 px</div>
+                <input type="file" id="file-tl-2023" accept="image/*" style="display:none"
+                  onchange="uploadFoto('tl_2023',this,'prev-tl-2023','tag-tl-2023','prog-tl-2023','pct-tl-2023')">
+                <div class="foto-preview" id="prev-tl-2023"
+                  onclick="prevClick(event,'file-tl-2023','tl_2023',this)">
+                  <div class="foto-preview-empty">Clique para enviar a foto</div>
+                </div>
+                <div class="focal-hint" id="fh-tl-2023">Clique na foto para reposicionar o foco</div>
+                <div class="upload-progress" id="prog-tl-2023"><div class="upload-fill" id="fill-tl-2023"></div></div>
+                <div class="upload-pct" id="pct-tl-2023"></div>
+                <div class="foto-slot-actions">
+                  <button class="btn btn-yellow btn-sm" onclick="document.getElementById('file-tl-2023').click()">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Enviar foto
+                  </button>
+                  <button class="btn btn-outline btn-sm" onclick="limparFoto('tl_2023','prev-tl-2023','tag-tl-2023')">Remover</button>
+                  <span class="foto-saved-tag" id="tag-tl-2023">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    Salvo
+                  </span>
+                </div>
+              </div>
+
+              <!-- 2024 -->
+              <div class="foto-slot">
+                <div class="foto-slot-label">Nossa História</div>
+                <div class="foto-slot-name">2024 — +4 Mil Pessoas</div>
+                <div class="foto-slot-dims">4:3 recomendado · mín. 800 × 600 px</div>
+                <input type="file" id="file-tl-2024" accept="image/*" style="display:none"
+                  onchange="uploadFoto('tl_2024',this,'prev-tl-2024','tag-tl-2024','prog-tl-2024','pct-tl-2024')">
+                <div class="foto-preview" id="prev-tl-2024"
+                  onclick="prevClick(event,'file-tl-2024','tl_2024',this)">
+                  <div class="foto-preview-empty">Clique para enviar a foto</div>
+                </div>
+                <div class="focal-hint" id="fh-tl-2024">Clique na foto para reposicionar o foco</div>
+                <div class="upload-progress" id="prog-tl-2024"><div class="upload-fill" id="fill-tl-2024"></div></div>
+                <div class="upload-pct" id="pct-tl-2024"></div>
+                <div class="foto-slot-actions">
+                  <button class="btn btn-yellow btn-sm" onclick="document.getElementById('file-tl-2024').click()">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Enviar foto
+                  </button>
+                  <button class="btn btn-outline btn-sm" onclick="limparFoto('tl_2024','prev-tl-2024','tag-tl-2024')">Remover</button>
+                  <span class="foto-saved-tag" id="tag-tl-2024">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    Salvo
+                  </span>
+                </div>
+              </div>
+
+              <!-- 2025 -->
+              <div class="foto-slot">
+                <div class="foto-slot-label">Nossa História</div>
+                <div class="foto-slot-name">2025 — Diploma Zumbi</div>
+                <div class="foto-slot-dims">4:3 recomendado · mín. 800 × 600 px</div>
+                <input type="file" id="file-tl-2025" accept="image/*" style="display:none"
+                  onchange="uploadFoto('tl_2025',this,'prev-tl-2025','tag-tl-2025','prog-tl-2025','pct-tl-2025')">
+                <div class="foto-preview" id="prev-tl-2025"
+                  onclick="prevClick(event,'file-tl-2025','tl_2025',this)">
+                  <div class="foto-preview-empty">Clique para enviar a foto</div>
+                </div>
+                <div class="focal-hint" id="fh-tl-2025">Clique na foto para reposicionar o foco</div>
+                <div class="upload-progress" id="prog-tl-2025"><div class="upload-fill" id="fill-tl-2025"></div></div>
+                <div class="upload-pct" id="pct-tl-2025"></div>
+                <div class="foto-slot-actions">
+                  <button class="btn btn-yellow btn-sm" onclick="document.getElementById('file-tl-2025').click()">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Enviar foto
+                  </button>
+                  <button class="btn btn-outline btn-sm" onclick="limparFoto('tl_2025','prev-tl-2025','tag-tl-2025')">Remover</button>
+                  <span class="foto-saved-tag" id="tag-tl-2025">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    Salvo
+                  </span>
+                </div>
+              </div>
+
+              <!-- 2026 -->
+              <div class="foto-slot">
+                <div class="foto-slot-label">Nossa História</div>
+                <div class="foto-slot-name">2026 — 5 Mil Pessoas · EPTV</div>
+                <div class="foto-slot-dims">4:3 recomendado · mín. 800 × 600 px</div>
+                <input type="file" id="file-tl-2026" accept="image/*" style="display:none"
+                  onchange="uploadFoto('tl_2026',this,'prev-tl-2026','tag-tl-2026','prog-tl-2026','pct-tl-2026')">
+                <div class="foto-preview" id="prev-tl-2026"
+                  onclick="prevClick(event,'file-tl-2026','tl_2026',this)">
+                  <div class="foto-preview-empty">Clique para enviar a foto</div>
+                </div>
+                <div class="focal-hint" id="fh-tl-2026">Clique na foto para reposicionar o foco</div>
+                <div class="upload-progress" id="prog-tl-2026"><div class="upload-fill" id="fill-tl-2026"></div></div>
+                <div class="upload-pct" id="pct-tl-2026"></div>
+                <div class="foto-slot-actions">
+                  <button class="btn btn-yellow btn-sm" onclick="document.getElementById('file-tl-2026').click()">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Enviar foto
+                  </button>
+                  <button class="btn btn-outline btn-sm" onclick="limparFoto('tl_2026','prev-tl-2026','tag-tl-2026')">Remover</button>
+                  <span class="foto-saved-tag" id="tag-tl-2026">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    Salvo
+                  </span>
+                </div>
+              </div>
+
+            </div><!-- /foto-slots trajetória -->
+          </div>
+        </div>
+
+      </section>
+
+    </div><!-- /main-body -->
+  </div><!-- /main-content -->
+</div><!-- /app -->
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- ══ FIREBASE ══════════════════════════════════════════ -->
+<script type="module">
+  import { initializeApp }    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+                              from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, collection, addDoc, deleteDoc, doc,
+           getDoc, setDoc, onSnapshot, orderBy, query, serverTimestamp }
+                              from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  // Cloudinary — troque CLOUDINARY_PRESET pelo nome do seu upload preset (Unsigned)
+  const CLOUDINARY_CLOUD  = 'dpywmrxfu';
+  const CLOUDINARY_PRESET = 'terreiro_candieiro';
+
+  const cfg = {
+    apiKey:            "AIzaSyAViFU3bdl8RKSHBuxMGAc97SPITd1aJWM",
+    authDomain:        "terreiro-candieiro.firebaseapp.com",
+    projectId:         "terreiro-candieiro",
+    storageBucket:     "terreiro-candieiro.firebasestorage.app",
+    messagingSenderId: "100068133826",
+    appId:             "1:100068133826:web:aa6bea82298a266737a45b"
+  };
+
+  const app  = initializeApp(cfg, 'qc-admin');
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  const MINIS = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+  const TIPOS = {
+    apresentacao: { label:'Apresentação', cls:'type-apresentacao' },
+    oficina:      { label:'Oficina',      cls:'type-oficina'      },
+    ensaio:       { label:'Ensaio',       cls:'type-ensaio'       },
+    privado:      { label:'Privado',      cls:'type-privado'      }
+  };
+
+  let unsubEvt  = null;
+  let unsubImp  = null;
+  let editingImpId = null;
+  let impCardsCache = [];
+
+  /* ── Auth ── */
+  onAuthStateChanged(auth, user => {
+    if (user) {
+      document.getElementById('login-screen').classList.add('hide');
+      document.getElementById('app').classList.add('show');
+      document.getElementById('sbUser').textContent = user.email;
+      iniciarListaEvts();
+      iniciarListaImprensa();
+      iniciarFotos();
+    } else {
+      document.getElementById('login-screen').classList.remove('hide');
+      document.getElementById('app').classList.remove('show');
+      if (unsubEvt) { unsubEvt(); unsubEvt = null; }
+      if (unsubImp) { unsubImp(); unsubImp = null; }
+    }
+  });
+
+  window.fazerLogin = async function() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const pass  = document.getElementById('loginPass').value;
+    const err   = document.getElementById('loginErr');
+    err.classList.remove('vis');
+    try {
+      await signInWithEmailAndPassword(auth, email, pass);
+    } catch(e) {
+      err.textContent = traduzErroAuth(e.code);
+      err.classList.add('vis');
+    }
+  };
+
+  window.fazerLogout = async function() {
+    await signOut(auth);
+  };
+
+  document.getElementById('loginPass').addEventListener('keydown', e => {
+    if (e.key === 'Enter') window.fazerLogin();
+  });
+
+  /* ── Agenda ── */
+  function iniciarListaEvts() {
+    if (unsubEvt) unsubEvt();
+    unsubEvt = onSnapshot(
+      query(collection(db, 'qc_eventos'), orderBy('data', 'asc')),
+      snap => {
+        const evts = snap.docs.map(d => ({ _id: d.id, ...d.data() }));
+        renderLista(evts);
+        // also sync localStorage for public site
+        localStorage.setItem('qc_v1', JSON.stringify(
+          evts.map(e => ({ id: e._id, nome: e.nome, data: e.data, hora: e.hora,
+                           tipo: e.tipo, local: e.local, obs: e.obs }))
+        ));
+      }
+    );
+  }
+
+  function renderLista(evts) {
+    const el    = document.getElementById('evtLista');
+    const count = document.getElementById('evtCount');
+    const futuros = evts.filter(e => e.data >= new Date().toISOString().split('T')[0]);
+    count.textContent = `${evts.length} evento(s) cadastrado(s) · ${futuros.length} próximo(s)`;
+
+    if (!evts.length) {
+      el.innerHTML = `<div class="empty-state">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Nenhum evento cadastrado ainda.
+      </div>`;
+      return;
+    }
+
+    el.innerHTML = evts.map(e => {
+      const [ano, m, d] = (e.data || '----').split('-');
+      const t = TIPOS[e.tipo] || TIPOS.apresentacao;
+      const passado = e.data < new Date().toISOString().split('T')[0];
+      return `<div class="evt-row" style="${passado?'opacity:.4':''}">
+        <div class="evt-date-col">${d} ${MINIS[parseInt(m)-1]||''}</div>
+        <div class="evt-time-col">${e.hora||'—'}</div>
+        <div class="evt-name-col">${e.nome||''}${e.local?`<br><span style="font-size:.7rem;opacity:.4">${e.local}</span>`:''}</div>
+        <div><span class="evt-type-badge ${t.cls}">${t.label}</span></div>
+        <div>
+          <button class="evt-del-btn" onclick="deletarEvento('${e._id}')" title="Remover evento">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          </button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  window.adicionarEvento = async function() {
+    const nome  = document.getElementById('evtNome').value.trim();
+    const data  = document.getElementById('evtData').value;
+    const hora  = document.getElementById('evtHora').value;
+    const tipo  = document.getElementById('evtTipo').value;
+    const local = document.getElementById('evtLocal').value.trim();
+    const obs   = document.getElementById('evtObs').value.trim();
+
+    if (!nome || !data) { toast('Preencha o nome e a data.', true); return; }
+
+    try {
+      await addDoc(collection(db, 'qc_eventos'), {
+        nome, data, hora, tipo,
+        local: local || 'Barão Geraldo',
+        obs,
+        ts: serverTimestamp()
+      });
+      limparForm();
+      toast('Evento adicionado!');
+    } catch(e) {
+      toast('Erro ao salvar. Tente novamente.', true);
+      console.error(e);
+    }
+  };
+
+  window.deletarEvento = async function(id) {
+    if (!confirm('Remover este evento?')) return;
+    try {
+      await deleteDoc(doc(db, 'qc_eventos', id));
+      toast('Evento removido.');
+    } catch(e) {
+      toast('Erro ao remover.', true);
+    }
+  };
+
+  window.limparForm = function() {
+    document.getElementById('evtNome').value  = '';
+    document.getElementById('evtData').value  = '';
+    document.getElementById('evtHora').value  = '19:00';
+    document.getElementById('evtTipo').value  = 'apresentacao';
+    document.getElementById('evtLocal').value = '';
+    document.getElementById('evtObs').value   = '';
+  };
+
+  /* ── Imprensa ── */
+  function iniciarListaImprensa() {
+    if (unsubImp) unsubImp();
+    unsubImp = onSnapshot(
+      query(collection(db, 'qc_imprensa'), orderBy('ordem', 'asc')),
+      snap => {
+        const cards = snap.docs.map(d => ({ _id: d.id, ...d.data() }));
+        renderListaImprensa(cards);
+        localStorage.setItem('qc_imprensa_v1', JSON.stringify(
+          cards.map(c => ({ id: c._id, source: c.source, titulo: c.titulo,
+                            subtitulo: c.subtitulo, link: c.link,
+                            imageUrl: c.imageUrl, ordem: c.ordem }))
+        ));
+      }
+    );
+  }
+
+  function renderListaImprensa(cards) {
+    impCardsCache = cards;
+    const el    = document.getElementById('impLista');
+    const count = document.getElementById('impCount');
+    count.textContent = `${cards.length} cobertura(s) cadastrada(s)`;
+
+    if (!cards.length) {
+      el.innerHTML = `<div class="empty-state">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/></svg>
+        Nenhuma cobertura cadastrada ainda.
+      </div>`;
+      return;
+    }
+
+    el.innerHTML = cards.map(c => `
+      <div class="evt-row">
+        <div class="evt-date-col" style="font-size:.75rem;opacity:.5">#${c.ordem||'—'}</div>
+        <div class="evt-name-col">
+          <strong>${c.titulo || '(sem título)'}</strong>
+          <br><span style="font-size:.7rem;opacity:.4">${c.source || ''} · ${c.link ? '<a href="'+c.link+'" target="_blank" style="color:var(--yellow)">ver link</a>' : 'sem link'}</span>
+        </div>
+        <div style="font-size:.75rem;opacity:.45;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px">${c.subtitulo || ''}</div>
+        <div style="display:flex;gap:.3rem">
+          <button class="evt-del-btn" onclick="editarImprensa('${c._id}')" title="Editar" style="color:rgba(245,200,0,.4)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="evt-del-btn" onclick="deletarImprensa('${c._id}')" title="Remover">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          </button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  window.adicionarImprensa = async function() {
+    const source   = document.getElementById('impSource').value.trim();
+    const titulo   = document.getElementById('impTitulo').value.trim();
+    const subtitulo= document.getElementById('impSub').value.trim();
+    const link     = document.getElementById('impLink').value.trim();
+    const imageUrl = document.getElementById('impImg').value.trim();
+    const ordem    = parseInt(document.getElementById('impOrdem').value) || 99;
+
+    if (!titulo) { toast('Preencha o título da matéria.', true); return; }
+
+    try {
+      if (editingImpId) {
+        await setDoc(doc(db, 'qc_imprensa', editingImpId),
+          { source, titulo, subtitulo, link, imageUrl, ordem }, { merge: true });
+        toast('Cobertura atualizada!');
+      } else {
+        await addDoc(collection(db, 'qc_imprensa'), {
+          source, titulo, subtitulo, link, imageUrl, ordem,
+          ts: serverTimestamp()
+        });
+        toast('Cobertura adicionada!');
+      }
+      limparFormImp();
+    } catch(e) {
+      toast('Erro ao salvar. Tente novamente.', true);
+      console.error(e);
+    }
+  };
+
+  window.editarImprensa = function(id) {
+    const c = impCardsCache.find(x => x._id === id);
+    if (!c) return;
+    editingImpId = id;
+    document.getElementById('impSource').value = c.source    || '';
+    document.getElementById('impTitulo').value = c.titulo    || '';
+    document.getElementById('impSub').value    = c.subtitulo || '';
+    document.getElementById('impLink').value   = c.link      || '';
+    document.getElementById('impImg').value    = c.imageUrl  || '';
+    document.getElementById('impOrdem').value  = c.ordem     || 1;
+    // update button + show cancel
+    const btn = document.getElementById('impSaveBtn');
+    if (btn) btn.textContent = 'Salvar alterações';
+    const cancel = document.getElementById('impCancelBtn');
+    if (cancel) cancel.style.display = 'inline-flex';
+    // scroll form into view
+    document.getElementById('tab-imprensa').querySelector('.panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    toast('Editando cobertura — altere os campos e salve.');
+  };
+
+  window.deletarImprensa = async function(id) {
+    if (!confirm('Remover esta cobertura?')) return;
+    try {
+      await deleteDoc(doc(db, 'qc_imprensa', id));
+      toast('Cobertura removida.');
+    } catch(e) {
+      toast('Erro ao remover.', true);
+    }
+  };
+
+  window.uploadImpImg = function(fileInput) {
+    const file = fileInput.files[0];
+    if (!file) return;
+    const prog = document.getElementById('prog-imp-img');
+    const fill = document.getElementById('fill-imp-img');
+    const pct  = document.getElementById('pct-imp-img');
+    if (prog) prog.classList.add('active');
+    if (pct)  pct.classList.add('active');
+
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('upload_preset', CLOUDINARY_PRESET);
+    fd.append('folder', 'quebra-coco/imprensa');
+
+    const xhr = new XMLHttpRequest();
+    xhr.upload.onprogress = e => {
+      if (!e.lengthComputable) return;
+      const p = Math.round(e.loaded / e.total * 100);
+      if (fill) fill.style.width = p + '%';
+      if (pct)  pct.textContent  = `Enviando… ${p}%`;
+    };
+    xhr.onload = () => {
+      try {
+        const data = JSON.parse(xhr.responseText);
+        if (xhr.status !== 200 || !data.secure_url) throw new Error(data.error?.message || `Status ${xhr.status}`);
+        document.getElementById('impImg').value = data.secure_url;
+        toast('Imagem enviada!');
+      } catch(e) {
+        toast('Erro no upload: ' + e.message, true);
+      } finally {
+        if (prog) prog.classList.remove('active');
+        if (pct)  { pct.classList.remove('active'); pct.textContent = ''; }
+        fileInput.value = '';
+      }
+    };
+    xhr.onerror = () => {
+      toast('Falha na conexão com Cloudinary.', true);
+      if (prog) prog.classList.remove('active');
+      if (pct)  { pct.classList.remove('active'); pct.textContent = ''; }
+      fileInput.value = '';
+    };
+    xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`);
+    xhr.send(fd);
+  };
+
+  window.limparFormImp = function() {
+    editingImpId = null;
+    document.getElementById('impSource').value = '';
+    document.getElementById('impTitulo').value = '';
+    document.getElementById('impSub').value    = '';
+    document.getElementById('impLink').value   = '';
+    document.getElementById('impImg').value    = '';
+    document.getElementById('impOrdem').value  = '1';
+    const btn = document.getElementById('impSaveBtn');
+    if (btn) btn.textContent = 'Adicionar';
+    const cancel = document.getElementById('impCancelBtn');
+    if (cancel) cancel.style.display = 'none';
+  };
+
+  /* ── Fotos ── */
+  const FOTO_DOC = doc(db, 'qc_config', 'fotos');
+
+  async function iniciarFotos() {
+    try {
+      const snap = await getDoc(FOTO_DOC);
+      if (snap.exists()) preencherSlotsFotos(snap.data());
+    } catch(e) { console.error(e); }
+  }
+
+  function preencherSlotsFotos(data) {
+    if (data.logo) {
+      const sbImg = document.getElementById('sb-logo-img');
+      if (sbImg) sbImg.src = data.logo;
+    }
+    const mapa = {
+      logo:      { prevId: 'prev-logo',      tagId: 'tag-logo'      },
+      hero:      { prevId: 'prev-hero',       tagId: 'tag-hero'      },
+      qs_wide:   { prevId: 'prev-qs-wide',    tagId: 'tag-qs-wide'   },
+      qs_tall_1: { prevId: 'prev-qs-tall-1',  tagId: 'tag-qs-tall-1' },
+      qs_tall_2: { prevId: 'prev-qs-tall-2',  tagId: 'tag-qs-tall-2' },
+      tl_2022:   { prevId: 'prev-tl-2022',    tagId: 'tag-tl-2022'   },
+      tl_2023:   { prevId: 'prev-tl-2023',    tagId: 'tag-tl-2023'   },
+      tl_2024:   { prevId: 'prev-tl-2024',    tagId: 'tag-tl-2024'   },
+      tl_2025:   { prevId: 'prev-tl-2025',    tagId: 'tag-tl-2025'   },
+      tl_2026:   { prevId: 'prev-tl-2026',    tagId: 'tag-tl-2026'   },
+    };
+    Object.entries(mapa).forEach(([slot, ids]) => {
+      const url = data[slot];
+      if (!url) return;
+      const pos = data[slot + '_pos'] || null;
+      atualizarPreview(ids.prevId, url, pos);
+      const tag = document.getElementById(ids.tagId);
+      if (tag) tag.classList.add('vis');
+    });
+  }
+
+  function atualizarPreview(prevId, url, pos) {
+    const prev = document.getElementById(prevId);
+    if (!prev) return;
+    const noFocal = 'noFocal' in prev.dataset;
+    if (url) {
+      const parts = pos ? pos.trim().split(/\s+/) : ['50%', '50%'];
+      const px = parts[0] || '50%', py = parts[1] || '50%';
+      const posAttr = pos ? ` style="object-position:${pos}"` : '';
+      const dot = noFocal ? '' : `<div class="focal-dot" style="left:${px};top:${py}"></div>`;
+      prev.innerHTML = `<img src="${url}" alt="preview"${posAttr} onerror="this.parentElement.innerHTML='<div class=\\'foto-preview-empty\\'>Imagem não carregada</div>'">${dot}`;
+      if (!noFocal) {
+        prev.classList.add('tem-foto');
+        const hint = document.getElementById('fh-' + prevId.replace('prev-', ''));
+        if (hint) hint.classList.add('vis');
+      }
+    } else {
+      prev.innerHTML = '<div class="foto-preview-empty">Clique para enviar a foto</div>';
+      prev.classList.remove('tem-foto');
+      const hint = document.getElementById('fh-' + prevId.replace('prev-', ''));
+      if (hint) hint.classList.remove('vis');
+    }
+  }
+
+  window.prevClick = function(event, fileId, slot, el) {
+    if (el.classList.contains('tem-foto')) {
+      const rect = el.getBoundingClientRect();
+      const x = Math.round((event.clientX - rect.left) / rect.width * 100);
+      const y = Math.round((event.clientY - rect.top)  / rect.height * 100);
+      const dot = el.querySelector('.focal-dot');
+      if (dot) { dot.style.left = x + '%'; dot.style.top = y + '%'; }
+      salvarFocalPoint(slot, x, y);
+    } else {
+      document.getElementById(fileId).click();
+    }
+  };
+
+  async function salvarFocalPoint(slot, x, y) {
+    const pos = x + '% ' + y + '%';
+    try {
+      await setDoc(FOTO_DOC, { [slot + '_pos']: pos }, { merge: true });
+      toast('Foco reposicionado!');
+    } catch(e) {
+      toast('Erro ao salvar foco.', true);
+    }
+  }
+
+  window.uploadFoto = function(slot, fileInput, prevId, tagId, progId, pctId) {
+    const file = fileInput.files[0];
+    if (!file) return;
+
+    const prog = document.getElementById(progId);
+    const fill = document.getElementById('fill-' + progId.replace('prog-', ''));
+    const pct  = document.getElementById(pctId);
+    if (prog) prog.classList.add('active');
+    if (pct)  pct.classList.add('active');
+
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('upload_preset', CLOUDINARY_PRESET);
+    fd.append('folder', 'quebra-coco');
+
+    const xhr = new XMLHttpRequest();
+
+    xhr.upload.onprogress = e => {
+      if (!e.lengthComputable) return;
+      const p = Math.round(e.loaded / e.total * 100);
+      if (fill) fill.style.width = p + '%';
+      if (pct)  pct.textContent  = `Enviando… ${p}%`;
+    };
+
+    xhr.onload = async () => {
+      try {
+        const data = JSON.parse(xhr.responseText);
+        if (xhr.status !== 200 || !data.secure_url) {
+          throw new Error(data.error?.message || `Status ${xhr.status}`);
+        }
+        const url = data.secure_url;
+        await setDoc(FOTO_DOC, { [slot]: url }, { merge: true });
+        atualizarPreview(prevId, url);
+        const tag = document.getElementById(tagId);
+        if (tag) tag.classList.add('vis');
+        toast('Foto enviada e salva!');
+      } catch(e) {
+        console.error('[uploadFoto] erro ao salvar:', e);
+        toast('Erro ao salvar foto: ' + e.message, true);
+      } finally {
+        if (prog) prog.classList.remove('active');
+        if (pct)  { pct.classList.remove('active'); pct.textContent = ''; }
+        fileInput.value = '';
+      }
+    };
+
+    xhr.onerror = () => {
+      toast('Falha na conexão com Cloudinary.', true);
+      if (prog) prog.classList.remove('active');
+      if (pct)  { pct.classList.remove('active'); pct.textContent = ''; }
+      fileInput.value = '';
+    };
+
+    xhr.open('POST', `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`);
+    xhr.send(fd);
+  };
+
+  window.limparFoto = async function(slot, prevId, tagId) {
+    if (!confirm('Remover esta foto do site?')) return;
+    try {
+      await setDoc(FOTO_DOC, { [slot]: '', [slot + '_pos']: '' }, { merge: true });
+      atualizarPreview(prevId, '');
+      const tag = document.getElementById(tagId);
+      if (tag) tag.classList.remove('vis');
+      toast('Foto removida.');
+    } catch(e) {
+      toast('Erro ao remover foto.', true);
+      console.error(e);
+    }
+  };
+
+  /* ── Utilities ── */
+  function traduzErroAuth(code) {
+    const m = {
+      'auth/invalid-email':         'E-mail inválido.',
+      'auth/user-not-found':        'Usuário não encontrado.',
+      'auth/wrong-password':        'Senha incorreta.',
+      'auth/invalid-credential':    'E-mail ou senha incorretos.',
+      'auth/too-many-requests':     'Muitas tentativas. Aguarde e tente novamente.',
+    };
+    return m[code] || 'Erro ao entrar. Verifique seus dados.';
+  }
+
+  let toastTimer;
+  window.toast = function(msg, isErr = false) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className   = 'toast show' + (isErr ? ' err' : '');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+  };
+</script>
+
+<!-- ══ NAV TABS ══════════════════════════════════════════ -->
+<script>
+  function trocaTab(tab, link) {
+    document.querySelectorAll('.sb-link').forEach(l => l.classList.remove('active'));
+    document.querySelectorAll('.sb-sec').forEach(s => s.classList.remove('active'));
+    link.classList.add('active');
+    const sec = document.getElementById('tab-' + tab);
+    if (sec) sec.classList.add('active');
+    const titles = { agenda: 'Agenda', imprensa: 'Na Imprensa', fotos: 'Fotos do Site' };
+    document.getElementById('mainTitle').textContent = titles[tab] || tab;
+  }
+</script>
+</body>
+</html>
