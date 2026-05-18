@@ -1738,12 +1738,13 @@
 
       <a href="mailto:nandomacedo42@gmail.com?subject=Convite%20-%20Quebra-Coco"
          class="pill pill--yellow"
-         aria-label="Enviar e-mail para o Quebra-Coco">
+         aria-label="Enviar e-mail para o Quebra-Coco"
+         onclick="var a=this,l=a.querySelector('.pill-label');if(navigator.clipboard)navigator.clipboard.writeText('nandomacedo42@gmail.com').then(function(){l.textContent='Copiado!';setTimeout(function(){l.textContent='E-mail'},1800)});return true;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <rect x="2" y="4" width="20" height="16" rx="2"/>
           <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
         </svg>
-        E-mail
+        <span class="pill-label">E-mail</span>
       </a>
 
       <a href="https://instagram.com/bloco.quebracoco"
